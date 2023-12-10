@@ -18,3 +18,14 @@ app.listen(3000, ()=>console.log("Listening to port 3000"))
 
 app.use('/api/test', userRoutes)
 app.use('/api/auth', authRoutes)
+
+// Error handling middleware
+app.use((err, req, res, next)=>{
+    const statusCode = err.statusCode || 500
+    const message = err.message
+    return res.status(statusCode).json({
+        success: false,
+        message,
+        statusCode
+    })
+})

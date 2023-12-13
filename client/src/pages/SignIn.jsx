@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { signInFailure, signInStart, signInSuccess } from "../redux/user/userSlice";
+import {useSelector, useDispatch} from 'react-redux'
 
 export default function SignIn() {
-
   const [formData, setFormData] = useState({});
-  const [errorFlag, setErrorFlag] = useState(false);
-  const [error, setError] = useState({});
-  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const {loading, error} = useSelector(state=>state.user)
+  const dispatch = useDispatch()
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -17,28 +17,25 @@ export default function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
-      setErrorFlag(false)
+      dispatch(signInStart())
       const res = await fetch("/api/auth/signin", {
         method: "Post",
         headers: {
-          'Content-Type': "application/json",
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
 
       const data = await res.json();
-      setLoading(false);
+
       if (data.success === false) {
-        setError(data)
-        setErrorFlag(true);
+        dispatch(signInFailure(data))
         return;
-    }
-    navigate('/')
-    
-    } catch (e) {
-     setLoading(false)
-     setErrorFlag(true)
+      }
+      dispatch(signInSuccess(data))
+      navigate("/");
+    } catch (err) {
+      dispatch(signInFailure(err))
     }
   };
   return (
@@ -74,7 +71,9 @@ export default function SignIn() {
           <span className="text-blue-500">sign up</span>
         </Link>
       </div>
-      <p className="text-red-700 mt-5">{errorFlag && error.statusCode === 500 ? "something went wrong" : error.message}</p>
+      <p className="text-red-700 mt-5">
+        {error.statusCode !== 500 ? error.message  : "something went wrong"}
+      </p>
     </div>
   );
 }

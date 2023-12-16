@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import OAuth from "../components/OAuth";
+import { useDispatch } from "react-redux";
+import { signInFailure, signInStart, signInSuccess } from "../redux/user/userSlice";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({});
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
-
+ 
   const navigate = useNavigate()
+  const dispatch = useDispatch();
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
@@ -14,8 +17,7 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
-      setError(false)
+     dispatch(signInStart())
       const res = await fetch("/api/auth/signup", {
         method: "Post",
         headers: {
@@ -25,16 +27,16 @@ export default function SignUp() {
       });
 
       const data = await res.json();
-      setLoading(false);
+     
       if (data.success === false) {
-        setError(true);
+        dispatch(signInFailure(data))
         return;
     }
+    dispatch(signInSuccess(data))
     navigate('/sign-in')
     
-    } catch (e) {
-     setLoading(false)
-     setError(true)
+    } catch (err) {
+     dispatch(signInFailure(err))
     }
   };
   return (
@@ -71,6 +73,7 @@ export default function SignUp() {
         >
           {loading ? "Loading ..." : "sign up"}
         </button>
+        <OAuth/>
       </form>
       <div className="flex gap-2 mt-5 ">
         <p>Have already an account?</p>
@@ -78,7 +81,9 @@ export default function SignUp() {
           <span className="text-blue-500">sign in</span>
         </Link>
       </div>
-      <p className="text-red-700 mt-5">{error && "something went wrong"}</p>
+      <p className="text-red-700 mt-5">
+        {error.statusCode !== 500 ? error.message  : "something went wrong"}
+        </p>
     </div>
   );
 }

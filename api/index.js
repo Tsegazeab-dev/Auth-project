@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 
 import userRoutes from './routes/user.routes.js'
 import authRoutes from './routes/auth.routes.js'
+import cookieParser from 'cookie-parser'
 
 dotenv.config()
 
@@ -13,10 +14,11 @@ mongoose.connect(process.env.MONGODB).then(()=>console.log("DB connected")).catc
 const app = express();
 
 app.use(express.json())
+app.use(cookieParser())
 
 app.listen(3000, ()=>console.log("Listening to port 3000"))
 
-app.use('/api/test', userRoutes)
+app.use('/api/user', userRoutes)
 app.use('/api/auth', authRoutes)
 
 // Error handling middleware

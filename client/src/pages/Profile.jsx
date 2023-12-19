@@ -7,7 +7,7 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../../firebase";
-import { updateFailure, updateStart, updateSuccess } from "../redux/user/userSlice";
+import { deleteFailure, deleteStart, deleteSuccess, updateFailure, updateStart, updateSuccess } from "../redux/user/userSlice";
 
 export default function Profile() {
 
@@ -87,6 +87,22 @@ export default function Profile() {
  
   }
 
+  console.log(currentUser._id)
+const handleDelete = async (e) =>{
+  try{
+ 
+    const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+      method: 'DELETE'
+    })
+    const data = await res.json();
+    if(data.success === false) dispatch(deleteFailure(data))
+    else dispatch(deleteSuccess())
+  }catch(err){
+    console.log(err)
+dispatch(deleteFailure(err))
+  }
+}
+
   return (
     <div className="flex flex-col max-w-lg mx-auto">
       <h1 className="text-3xl text-center mt-5">My Profile</h1>
@@ -141,14 +157,14 @@ export default function Profile() {
         </button>
 
         <div className="flex justify-between mt-3 mx-5">
-          <span className="text-red-700 cursor-pointer">Delete Account</span>
+          <span onClick={handleDelete} className="text-red-700 cursor-pointer">Delete Account</span>
           <span className="text-red-700 cursor-pointer">Sign out</span>
         </div>
       </form>
 
       <div className="border rounded-lg shadow-lg mt-3">
       <p className="text-red-700 mb-5 text-center">
-        {error.statusCode !== 500 ? error.message  : "something went wrong"}
+        {error && "something went wrong"}
       </p>
       <p className="text-green-700 mb-5 text-center">
         {updateSucceeded && 'User Credentials updated successfully'}
